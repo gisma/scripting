@@ -6,6 +6,7 @@
 ## Lat  is latitude in decimal degrees
 ## Long is longitude in decimal degrees (negative = West)
 
+
 ## This method is copied from:
 ## Teets, D.A. 2003. Predicting sunrise and sunset times.
 ##  he College Mathematics Journal 34(4):317-321.
