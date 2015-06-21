@@ -1,43 +1,44 @@
 #!/usr/bin/Rscript
+## Source http://www.r-bloggers.com/approximate-sunrise-and-sunset-times/
+## adapted Chris Reudenbach
+##
+## date is the date "%m/%d/%Y" 
+## Lat  is latitude in decimal degrees
+## Long is longitude in decimal degrees (negative = West)
 
-#suncalc<-function(date,Lat=50.3,Long=10.1){
+## This method is copied from:
+## Teets, D.A. 2003. Predicting sunrise and sunset times.
+##  he College Mathematics Journal 34(4):317-321.
+
+## At the given location the estimates of sunrise and sunset are within
+## seven minutes of the correct times (http://aa.usno.navy.mil/data/docs/RS_OneYear.php)
+## with a mean of 2.4 minutes error.
+
+# getting the args
   args<-commandArgs(TRUE)
   date=as.character(args[1])
   Lat=as.numeric(args[2]) 
   Long=as.numeric(args[3])
 
-
-  ## d is the day of year
-  ## Lat is latitude in decimal degrees
-  ## Long is longitude in decimal degrees (negative == West)
-  ## Source http://www.r-bloggers.com/approximate-sunrise-and-sunset-times/
-  ## This method is copied from:
-  ##Teets, D.A. 2003. Predicting sunrise and sunset times.
-  ##  The College Mathematics Journal 34(4):317-321.
-  
-  ## At the default location the estimates of sunrise and sunset are within
-  ## seven minutes of the correct times (http://aa.usno.navy.mil/data/docs/RS_OneYear.php)
-  ## with a mean of 2.4 minutes error.
-  
-  # convert day to julian day
+# convert day to julian day
   d=strptime(date, "%m/%d/%Y")$yday+1
   
-  ## Function to convert degrees to radians
+## Function to convert degrees to radians
   rad<-function(x)pi*x/180
   
-  ##Radius of the earth (km)
+##Radius of the earth (km)
   R=6378
   
-  ##Radians between the xy-plane and the ecliptic plane
+##Radians between the xy-plane and the ecliptic plane
   epsilon=rad(23.45)
   
-  ##Convert observer's latitude to radians
+##Convert observer's latitude to radians
   L=rad(Lat)
   
-  ## Calculate offset of sunrise based on longitude (min)
-  ## If Long is negative, then the mod represents degrees West of
-  ## a standard time meridian, so timing of sunrise and sunset should
-  ## be made later.
+## Calculate offset of sunrise based on longitude (min)
+## If Long is negative, then the mod represents degrees West of
+## a standard time meridian, so timing of sunrise and sunset should
+## be made later.
   timezone = -4*(abs(Long)%%15)*sign(Long)
   
   ## The earth's mean distance from the sun (km)
