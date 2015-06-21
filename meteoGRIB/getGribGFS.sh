@@ -167,6 +167,7 @@ else
 	exit
 fi
 
+
 # rename initial analysis data due to a different number of variables
 mv gfs.t${charStartTime}z.pgrb2.0p25.f000 gfs.t${charStartTime}z.pgrb2.0p25.f000.grb
 
