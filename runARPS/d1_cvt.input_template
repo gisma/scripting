@@ -1,0 +1,325 @@
+!
+!     ##################################################################
+!     ##################################################################
+!     ######                                                      ######
+!     ######       INPUT FILE FOR ARPSCVT IN NAMELIST FORMAT      ######
+!     ######               (ARPS VERSION 5.3)                     ######
+!     ######                                                      ######
+!     ######                     Developed by                     ######
+!     ######     Center for Analysis and Prediction of Storms     ######
+!     ######                University of Oklahoma                ######
+!     ######                                                      ######
+!     ##################################################################
+!     ##################################################################
+!
+!
+!-----------------------------------------------------------------------
+!
+! This file contains the input parameters n namelist format for ARPS 
+! history data conversion program ARPSCVT.
+!
+! A explanation on the NAMELIST format can be found in ARPS input file
+! arps.input. 
+!
+! Note that only lines between &NAMELIST_NAME and / are read as the
+! input data, and there must be a blank space in front of the '&' sign.
+!
+! Comments can be written between these data blocks. We are using 'c'
+! in the first column of comment line only to distinquish them from the
+! data statement.
+!
+!-----------------------------------------------------------------------
+!
+!   Author:
+!
+!   Ming Xue (11/10/1990)
+!
+!   Modification history:
+!
+!   Ming Xue (11/13/1994)
+!   Version 1.1.  Namelist format input file.
+!
+!   2000/04/07 Ming Xue
+!   Added an option that allows one to specify input history data
+!   at a constant time interval.
+!
+!   2000/05/19 (Gene Bassett)
+!   Added grid_dims namelist.
+!
+!   2003/09/15 (Yunheng Wang)
+!   Added the capability for converting terrain data, surface data
+!   and history format dumps from EXT2ARPS.
+!
+!-----------------------------------------------------------------------
+!
+!  hinfmt   The format flag of the input history data.
+!          = 0, Do not convert history data;
+!          = 1, unformatted binary data dump
+!          = 2, formatted ascii data dump
+!          = 3, NCSA HDF4 format data dump
+!          = 4, Packed binary data dump
+!          = 5, dump for Savi3D visualization package
+!          = 6, binary allowing data point skip
+!          = 7, NetCDF format
+!          = 8, NetCDF in one file
+!          = 9, GrADS data dump
+!          = 10, GRIB data dump.
+!
+!  hdmpinopt = Indicate the way history data files are specified. 
+!            = 1, Data are at a constant time interval given start and
+!                 end times.  The files names are constucted using ARPS
+!                 history data naming convention given file header
+!                 (runname plus directory name in arps).
+!            = 2, Data files are explicitly listed. 
+!
+!  hdmpfheader  History data file name header (not including '.' at the end), 
+!               corresponding to runname plus directory name.
+!               e.g., hdmpfheader='./may20'.  (For hdmpinopt=1.)
+!
+!  hdmpftrailer Whatever character string following the time in the history
+!               file name. Usually it is for version number, grid number etc.
+!               E.g., hdmpftrailer='.g01.01'. If none, set to ''.
+
+!               Note: DO NOT include '.gz' associated with file compression.
+!               (For hdmpinopt=1.)
+!
+!  tintv_dmpin  Time interval between history data dumps used (hdmpinopt=1).
+!  tbgn_dmpin   Time at which input history data begins (hdmpinopt=1).
+!  tend_dmpin   Time at which input history data ends (hdmpinopt=1).
+!  
+!  grdbasfn Base-state and grid data file name (hdmpinopt=2).
+!  nhisfile The number of time-dependent history files to be converted
+!           (hdmpinopt=2).
+!  hisfile  History data files to be converted (hdmpinopt=2).
+!
+!  Note: Domain dimensions nx, ny and nz are obtained from file grdbasfn.
+!
+!-----------------------------------------------------------------------
+!
+ &history_data
+   hinfmt = 1,
+   hdmpinopt    = 1,
+     hdmpfheader_
+     hdmpftrailer= '',
+     tintv_dmpin_
+     tbgn_dmpin_
+     tend_dmpin_
+     grdbasfn_
+     nhisfile = 0,
+     hisfile(1) = 'runname.bin120600',
+     hisfile(2) = 'runname.bin124200',
+ 
+ /
+
+!-----------------------------------------------------------------------
+!
+! For terrain data, and surface characteristics data
+!
+!  terninfmt  Format of terrain data file.
+!         = 0, Do not convert terrain data;
+!         = 1, Fortran unformatted (default);
+!         = 3, HDF4 (uncompressed);
+!         = 7, NetCDF format.
+!
+!  terndta  Name of the terrain data file for terninfmt=1 or 3.
+!
+!  sfcinfmt   Format of data file containing surface characteristics.
+!         = 0, Do not convert surface data;
+!         = 1, Fortran unformatted (default);
+!         = 3, HDF4 (uncompressed);
+!         = 7, NetCDF format.
+!
+!  soilinfmt  Format of data file containing initial values of soil model
+!             variables.
+E2A!         = 0, Do not convert soil model variables;
+!         = 1, Fortran unformatted (default);
+!         = 3, HDF4 (uncompressed);
+!         = 7, NetCDF format.
+!
+!  soilinfl Data file containing the initial values of soil model variables
+!          (ground surface temperature, deep soil temperature,
+!           ground surface soil moisture, deep soil moisture, and
+!           canopy moisture)
+!
+!  sfcdtfl  Data file containing the surface characteristics
+!           (soil and vegetation type, leaf area index and surface roughness).
+!
+!-----------------------------------------------------------------------
+ &other_data
+    terninfmt = 1,
+    terndta_
+
+    sfcinfmt  = 1,
+    sfcdtfl_
+
+    soilinfmt = 1,
+    soilinfl_
+/
+
+!
+!-----------------------------------------------------------------------
+!
+!  output control parameters.
+!
+!  dirname   Name of directory into which output files are written
+!
+!  readyfl   Flag to writing a _ready file after output file 
+!            is written
+!          = 0, no _ready file
+!          = 1, write _ready file
+!
+!  outrunname Runname for the converted files. If the length of
+!             outrunname specified is 0 (default) then the runname encoded in
+!             the input files will be used, otherwise, the runname endcoded
+!             in the output files will be changed to this string.
+!
+!  grdbasopt Flag to indicate whether to write the time independent 
+!            grid and base file or not.
+!          = 0, no grid and base file;
+!          = 1, only write one grid and base file for the first file
+!               to be converted;
+!          = 2, write grid and base file for every file to be converted.
+!
+!  thisdmp   time interval between history data dumps
+!
+!  exbcdmp   Flag to dump ARPS external boundary data files.
+!          = 0, no EXBC dumping;
+!          = 1, EXBC dumping (Fortran unformatted);
+!          = 3, HDF4 dumping format;
+!          = 7, NetCDF format dumps.
+!
+!  exbchdfcompr  HDF4 compression option (for exbcdmp=3).
+!          = 0 (default), no compression;
+!          = 1, fast gzip compression;
+!          = 2, high gzip compression;
+!          = 3, adaptive or skipping Huffman compression;
+!          = 4-7, as above plus mapping reals to 16 bit integers.
+!            Note that only options 0-2 work on Cray platforms.
+!  
+!            When exbchdfcompr > 4, inside of domain (unused portion, 
+!            determined by ngbrz & zbrdmp) set to a constant value.
+!
+!  ngbrz     Number of boundary grid points (used only with exbcdmp=4).
+!
+!  zbrdmp    Height of the bottom of Rayleigh damping layer (used only with
+!            exbcdmp=4).
+!
+!  hdmpfmt   History data dump format option.
+!          = 0, no data dump is produced;
+!          = 1, unformatted binary data dump;
+!          = 2, formatted ascii data dump;
+!          = 3, NCSA HDF4 format data dump;
+!          = 4, Packed binary data dump;
+!          = 5, dump for Savi3D visualization package;
+!          = 6, binary allowing data point skip;
+!          = 7, NetCDF format;
+!          = 8, NetCDF format in one file;
+!          = 9, GrADS data dump;
+!          = 10, GRIB data dump;
+!          = 11, Vis5D data dump.
+!
+!  grbpkbit  Number of bits in packing GRIB format output
+!          = 16 (default)
+!
+!  hdfcompr  HDF4 compression option (for hdmpfmt=3).
+!          = 0 (default), no compression;
+!          = 1, fast gzip compression;
+!          = 2, high gzip compression;
+!          = 3, adaptive or skipping Huffman compression;
+!          = 4-7, as above plus mapping reals to 16 bit integers.
+!            Note that only options 0-2 work on Cray platforms.
+!
+!  grdout    Grid output option.
+!          = 0, no grid output
+!          = 1, grid output
+!  basout    Base state field output option.
+!          = 0, no base state fields output
+!          = 1, base state fields output
+!  varout    Mass & perturbation wind output option in history dump.
+!          = 0, no mass or perturbation wind output
+!          = 1, mass & perturbation wind output
+!  mstout    Moist variable output option in history dump.
+!          = 0, no moisture variables output
+!          = 1, qv, qc, qr, qi, qs and qh output.
+!  iceout    Ice variable outout option in history dump.
+!          = 0, no ice variables output
+!          = 1, qi, qs and qh output.
+!  trbout    Turbulence field (km) output option in history dump.
+!          = 0, on km output
+!          = 1, km output
+!  rainout   Option for surface accumulated rainfall array output.
+!          = 0, no,
+!          = 1, yes.
+!  sfcout    Surface variable output option in history dump.
+!          = 0, no surface variables output
+!          = 1, tsfc and wetsfc output
+!  landout   Option for soil and vegetation property array output in
+!            history dump.
+!          = 0, no,
+!          = 1, yes.
+!
+!  terndmp   Flag to dump ARPS terrain data file
+!          = 0, no terrain data file;
+!          = 1, Fortran unformatted dumps;
+!          = 3, HDF4 (uncompressed) dumps;
+!          = 7, NetCDF format dumps.
+!
+!  sfcdmp    Flag to dump ARPS surface data files
+!          = 0, no surface data files;
+!          = 1, Fortran unformatted dumps;
+!          = 3, HDF4 (uncompressed) dumps;
+!          = 7, NetCDF format dumps.
+!
+!  soildmp   Flag to dump ARPS soil data files
+!          = 0, no soil data files;
+!          = 1, Fortran unformatted dumps;
+!          = 3, HDF4 (uncompressed) dumps;
+!          = 7, NetCDF format dumps.
+!
+!  filcmprs Option for compressing the history files using gzip.
+!          = 0, no
+!          = 1, yes. 
+!
+!-----------------------------------------------------------------------
+!
+
+ &output
+   dirname_
+   readyfl    = 1,
+   outrunname ='', 
+
+   hdmpfmt_
+     grbpkbit = 16,
+     hdfcompr = 5,
+
+   grdbasopt = 1,
+
+   exbcdmp = 0,
+   exbchdfcompr = 5,
+     ngbrz = 5,
+     zbrdmp = 12000.0,
+   basout  = 1,
+   grdout  = 1,
+   varout  = 1,
+   mstout  = 1,
+   iceout  = 1,
+   trbout  = 1,
+   tkeout  = 1,
+   rainout = 1,
+   sfcout  = 1,
+   landout = 1,
+   prcout  = 1,
+   radout  = 1,
+   flxout  = 1,
+   qcexout = 1,
+   qrexout = 1,
+   qiexout = 1,
+   qsexout = 1,
+   qhexout = 1,
+
+   terndmp = 1,
+   sfcdmp  = 1,
+   soildmp = 1,
+
+   filcmprs = 0,
+ /

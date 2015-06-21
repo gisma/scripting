@@ -1,0 +1,83 @@
+### levels
+# absvprs   ABSV:1000 975 950 925 900   **(1000 975 950 925 900.. 70 50 30 20 10) absolute vorticity**[1/s]** 
+# clwmrprs  CLWMR:1000:|:975:|:950:|:925:|:900:|:850:|:800:|:750:|:700:|:600:|:500:|:400:|:300:|:200:|:100:  **(1000 975 950 925 900.. 300 250 200 150 100) cloud mixing ratio**[kg/kg]**
+# hgtprs    HGT:1000:|:975:|:950:|:925:|:900:|:850:|:800:|:750:|:700:|:600:|:500:|:400:|:300:|:200:|:100:    **(1000 975 950 925 900.. 70 50 30 20 10) geopotential height**[gpm]**
+# rhprs     RH:1000:|:975:|:950:|:925:|:900:|:850:|:800:|:750:|:700:|:600:|:500:|:400:|:300:|:200:|:100:     **(1000 975 950 925 900.. 70 50 30 20 10) relative humidity**[%]** 
+# tmpprs    TMP:1000:|:975:|:950:|:925:|:900:|:850:|:800:|:750:|:700:|:600:|:500:|:400:|:300:|:200:|:100:    **(1000 975 950 925 900.. 70 50 30 20 10) temperature**[k]** 
+# ugrdprs   UGRD:1000:|:975:|:950:|:925:|:900:|:850:|:800:|:750:|:700:|:600:|:500:|:400:|:300:|:200:|:100:   **(1000 975 950 925 900.. 70 50 30 20 10) u-component of wind**[m/s]** 
+# vgrdprs   VGRD:1000:|:975:|:950:|:925:|:900:|:850:|:800:|:750:|:700:|:600:|:500:|:400:|:300:|:200:|:100:   **(1000 975 950 925 900.. 70 50 30 20 10) v-component of wind**[m/s]**
+# vvelprs   VVEL:1000:|:975:|:950:|:925:|:900:|:850:|:800:|:750:|:700:|:600:|:500:|:400:|:300:|:200:|:100:   **(1000 975 950 925 900.. 300 250 200 150 100) vertical velocity (pressure)**[pa/s]**
+
+### clouds altitude
+# preslclb  :PRES:low cloud bottom level:       ** low cloud bottom level pressure**[pa]** 
+# preslclt  :PRES:low cloud top level:          ** low cloud top level pressure**[pa] 
+# presmclb  :PRES:middle cloud bottom level:    ** middle cloud bottom level pressure**[pa]** 
+# presmclt  :PRES:middle cloud top level:       ** middle cloud top level pressure**[pa]** 
+# preshclb  :PRES:high cloud bottom level:      ** high cloud bottom level pressure**[pa]** 
+# preshclt  :PRES:high cloud top level:         ** high cloud top level pressure**[pa]** 
+# prescclb  :PRES:convective cloud bottom level:** convective cloud bottom level pressure**[pa]**  
+# prescclt  :PRES:convective cloud top level:   ** convective cloud top level pressure**[pa]**
+### clouds cover
+# tcdcclm   :TCDC:entire atmosphere:          ** entire atmosphere total cloud cover [%] 
+# tcdcblcll :TCDC:boundary layer cloud layer: ** boundary layer cloud layer total cloud cover [%] 
+# tcdclcll  :TCDC:low cloud layer:            ** low cloud layer total cloud cover [%] 
+# tcdcmcll  :TCDC:middle cloud layer:         ** middle cloud layer total cloud cover [%]  
+# tcdchcll  :TCDC:high cloud layer:           ** high cloud layer total cloud cover [%] 
+# tcdcccll  :TCDC:convective cloud layer:     ** convective cloud layer total cloud cover [%]  
+ 
+### themodynamic 2m
+# rh2m           :RH:2 m above ground:        **2 m above ground relative humidity**[%]**
+# spfh2m         :SPFH:2 m above ground:      **2 m above ground specific humidity**[kg/kg]**
+# tmax2m         :TMAX:2 m above ground:      **2 m above ground maximum temperature**[k]** 
+# tmin2m         :TMIN:2 m above ground:      **2 m above ground minimum temperature**[k]**  
+# tmp2m          :TMP:2 m above ground:       **2 m above ground temperature**[k]** 
+# dpt2m          :DPT:2 m above ground:       **2 m above ground dew point temperature**[k]** 
+# tmp100m        :TMP:100 m above ground:     **100 m above ground temperature**[k]** 
+# tmpsfc         :TMP:surface:                **surface temperature**[k]** 
+
+### surface
+# dlwrfsfc       :DLWRF:surface: **surface downward long-wave rad. flux**[w/m^2]** 
+# dswrfsfc       :DSWRF:surface: **surface downward short-wave radiation flux**[w/m^2]** 
+# gfluxsfc       :GFLUX:surface: **surface ground heat flux**[w/m^2]**
+# pressfc        :PRESS:surface: **surface pressure**[pa]** 
+# shtflsfc       :SHTFL:surface: **surface sensible heat net flux**[w/m^2]** 
+# sunsdsfc       :SUNSD:surface: **surface sunshine duration**[s]** 
+# albdosfc       :ALBDO:surface: **surface albedo**[%]** 
+# hgtsfc         :HGT:surface:   **surface geopotential height**[gpm]** 
+# hpblsfc        :HPBL:surface:  **surface planetary boundary layer height**[m]**
+
+### Precipitation sum
+# acpcpsfc       :ACPCP:surface:   **surface convective precipitation**[kg/m^2]**
+# apcpsfc        :APCP:surface:    **surface total precipitation**[kg/m^2]** 
+### precipitation rate
+# cpratsfc       :CPRAT:surface:   **surface convective precipitation rate**[kg/m^2/s]**
+# pratesfc       :PRATE:surface:   **surface precipitation rate [kg/m^2/s]** 
+### rain categorical
+# crainsfc       :CRAIN:surface:   **surface categorical rain**[-]** 
+# cfrzrsfc       :CFRZR:surface:   **surface categorical freezing rain**[-]** 
+# cicepsfc       :CICEP:surface:   **surface categorical ice pellets**[-]**
+# csnowsfc       :CSNOW:surface:   **surface categorical snow**[-]**
+###Convection
+# no4lftxsfc     :4LFTX:surface:   **surface best (4 layer) lifted index**[k]**
+# capesfc        :CAPE:surface:    **surface convective available potential energy**[j/kg]** 
+# cinsfc         :CIN:surface:     **surface convective inhibition**[j/kg]** 
+# lftxsfc        :LFTX:surface:    **surface surface lifted index**[k]** 
+# gustsfc        :GUST:surface:    **surface wind speed (gust)**[m/s]** 
+
+###wind 
+# ugrd10m        :UGRD:10 m above ground:  **10 m above ground u-component of wind**[m/s]** 
+# ugrd100m       :UGRD:100 m above ground: ** 100 m above ground u-component of wind [m/s]** 
+# vgrd10m        :VGRD:10 m above ground:  ** 10 m above ground v-component of wind [m/s]** 
+# vgrd100m       :VGRD:100 m above ground: ** 100 m above ground v-component of wind [m/s]**
+
+# ugrdpbl        :UGRD:planetary boundary layer:  ** planetary boundary layer u-component of wind [m/s]** 
+# ugrdpbl        :VGRD:planetary boundary layer:  ** planetary boundary layer v-component of wind [m/s]** 
+# vratepbl       :VRATE:planetary boundary layer: ** planetary boundary layer ventilation rate [m^2/s]** 
+ 
+# cwatclm        :CWAT:entire atmosphere (considered as a single layer):  **entire atmosphere (considered as a single layer) cloud water**[kg/m^2]** 
+# cworkclm       :CWORK:entire atmosphere (considered as a single layer): **entire atmosphere (considered as a single layer) cloud work function**[j/kg]** 
+# pwatclm        :PWAT:entire atmosphere (considered as a single layer):  **entire atmosphere (considered as a single layer) precipitable water**[kg/m^2]**
+# hgt0c          :HGT:0C isotherm:                                        **0c isotherm geopotential height**[gpm]**  
+# prmslmsl       :PRMSL:mean sea level:                                   **mean sea level pressure reduced to msl**[pa]**
+
+ 
