@@ -140,7 +140,7 @@ filename=$(basename "$INFILE")
 filename="${filename%.*}"
 fndate=${filename:20:8}
 INDATAPATH=$(dirname "$INFILE")
-EXDATAPATH=/home/$USER/$DATADIR/$MODELDIR/$fndate/$run
+EXDATAPATH=/home/$USER/$DATADIR/$MODELDIR/$date/$run
 
 echo "~~~~~~~~~~~~~~~~~"
 echo "output folder:"
