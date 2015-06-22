@@ -174,14 +174,28 @@ URL="http://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl?file=gfs.t${run}z.pg
 echo "check if data is available...."
 if [[ `curl --head $URL 2>&1 | grep 'HTTP/1.1 200 OK'` ]]
  then
+    curl "$URL" -o gfs.t${run}z.pgrb2.0p25.f000
+	file_size_00=`du -k "gfs.t${run}z.pgrb2.0p25.f000" | cut -f1`
 	# start loop over all time slots NOTE GFS 0.25 has a 3 hours cycle
 	while [ $hour -le $EndTime ]
 	do
 		# loop setup the url
     	URL="http://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl?file=gfs.t${run}z.pgrb2.0p25.f${charNewHour}&all_lev=on&all_var=on&subregion=&leftlon=${leftlon}&rightlon=${rightlon}&toplat=${toplat}&bottomlat=${bottomlat}&dir=%2Fgfs.${date}${run}"
 		echo "start download...."
-		# then we get the data via cURL
-		curl "$URL" -o gfs.t${run}z.pgrb2.0p25.f${charNewHour}
+        if [ ! -f gfs.t${run}z.pgrb2.0p25.f${charNewHour} ]; then
+          curl "$URL" -o gfs.t${run}z.pgrb2.0p25.f${charNewHour}
+        else
+		  file_size_run=`du -k "gfs.t${run}z.pgrb2.0p25.f${charNewHour}" | cut -f1`
+          comp=$(echo "$file_size_00" | awk '{printf("%d\n",$file_size_00 * 0.2 +$file_size_00)}')
+		  if (( $file_size_run < $file_size_00 )) ; then
+		  echo "HALLO"
+    		  # then we get the data via cURL
+	    	  curl "$URL" -o gfs.t${run}z.pgrb2.0p25.f${charNewHour}
+          elif (( $file_size_run > comp)) ; then
+              curl "$URL" -o gfs.t${run}z.pgrb2.0p25.f${charNewHour}
+
+		  fi
+		fi
 		# INCREMENT timeslot
 		hour=$(($hour + 3))
 		# correct time format for substitution
@@ -200,7 +214,7 @@ fi
 mv gfs.t${run}z.pgrb2.0p25.f000 gfs.t${run}z.pgrb2.0p25.f000.grb
 
 # merge all grib2 files to one
-cdo mergetime gfs.t${run}z.pgrb2.0p25.f??? gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.grb
+cdo -O mergetime gfs.t${run}z.pgrb2.0p25.f??? gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.grb
 
 # grib2 to netcdf
 if [[ "${netCDF1}" == "TRUE" ]] ; then
@@ -211,7 +225,7 @@ if [[ "${netCDF1}" == "TRUE" ]] ; then
   # remove uncompressed file
   if [ ! -f gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.nc ]; then rm -r gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.nc ; fi
 fi
-
+echo $(printf %.$2f $(echo "scale=0;(((10^$file_size_00)*$1)+0.5)/(10^$file_size_00)" | bc))
 # grib2 to grib1
 if [[ "${grib1}" == "TRUE" ]] ; then
   # convert the grib 2 to grib one for usage with zygrib
