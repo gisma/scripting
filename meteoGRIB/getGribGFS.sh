@@ -1,9 +1,10 @@
 #!/bin/bash
 # Chris Reudenbach
-# Version: 0.1 Date: 2015-06-17
-#          0.2 Date: 2015-06-20
+# Version: 0.1 date: 2015-06-17
+#          0.2 date: 2015-06-20
 #                    add commandline and nettiquette
 #                    add default settings
+#          0.3 date: 2015-06-21 added path and conversion arguments
 # simple script to download (selected) GFS 0.25 data for a forecast period
 # from the NCEP NOAA archive
 # Additionally it converts the single files to one datafile for use with IDV etc.
