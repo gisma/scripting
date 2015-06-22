@@ -22,25 +22,26 @@ if [[ "$1" == '-h' ]]; then
     echo " It is strongly recommended to extract a ROI"
     echo " "
     echo "Usage: ./getGribGFS.sh -h gives this brief help "
-    echo "       ./getGribGFS.sh -d=YYYYMMDD -r=00 -wl=DDD.DD -el=DDD.DD -nl=DDD.DD -sl=DDD.DD -st=0 -et=96 -nc=FALSE -g1=FALSE -f1=DataDir -f2=MTypDir"
+    echo "       ./getGribGFS.sh -d=YYYYMMDD -r=00 -wl=DDD.DD -el=DDD.DD -nl=DDD.DD -sl=DDD.DD -st=0 -et=96 -nc=FALSE -g1=FALSE -f1=DataDir -f2=MTypDir -f3=<pathtoscript>"
     echo""
-    echo " -d=YYYYMMDD :  date i.e. 20150621"
-    echo " -r=HH       :  hour of run [00 06 12 18]"
-    echo " -wl=DDD.DD  :  western  Longitude of area to extract"
-    echo " -el=DDD.DD  :  eastern  Longitude of area to extract"
-    echo " -sl=DDD.DD  :  southern Latitude of area to extract"
-    echo " -nl=DDD.DD  :  northern Latitude of area to extract"
-    echo "                all in decimal degrees"
-    echo "                default lon [0 360], lat [-90 90]"
-    echo " -st=HH      :  start time [0] of forecast"
-    echo " -et=HH      :  end time [96]  of forecast"
-    echo "                0.25 GFS 3h => 96=10 days "
-    echo " -nc=boolean :  <[FALSE]/TRUE> convert data to netcdf format"
-    echo " -g1=boolean :  <[FALSE]/TRUE> convert data to grib1 format"
-    echo " -f1=DATADIR :  <[wxdata]> root data directory under $HOME"
-    echo " -f2=MTypDir :  <[GFS25]> convert data to grib1 format"
+    echo " -d=YYYYMMDD  :  date i.e. 20150621"
+    echo " -r=HH        :  hour of run [00 06 12 18]"
+    echo " -wl=DDD.DD   :  western  Longitude of area to extract"
+    echo " -el=DDD.DD   :  eastern  Longitude of area to extract"
+    echo " -sl=DDD.DD   :  southern Latitude of area to extract"
+    echo " -nl=DDD.DD   :  northern Latitude of area to extract"
+    echo "                 all in decimal degrees"
+    echo "                 default lon [0 360], lat [-90 90]"
+    echo " -st=HH       :  start time [0] of forecast"
+    echo " -et=HH       :  end time [96]  of forecast"
+    echo "                 0.25 GFS 3h => 96=10 days "
+    echo " -nc=boolean  :  <[FALSE]/TRUE> convert data to netcdf format"
+    echo " -g1=boolean  :  <[FALSE]/TRUE> convert data to grib1 format"
+    echo " -f1=DATADIR  :  <[wxdata]> root data directory under $HOME"
+    echo " -f2=MTypDir  :  <[GFS25]> convert data to grib1 format"
+    echo " -f3=ScriptDir:  <[[scripting]> script folder under $HOME/dev "
     echo " "
-    echo " example     :  ./getGribGFS.sh -d=20150620 -r=00 -wl=-10.5 -el=20.25 -nl=60.75 -sl=40.0"
+    echo " example      :  ./getGribGFS.sh -d=20150620 -r=00 -wl=-10.5 -el=20.25 -nl=60.75 -sl=40.0"
     exit 0
 fi
 
@@ -83,7 +84,9 @@ case $i in
     -f2=*)
     MODELDIR="${i#*=}"
     ;;
-
+    -f3=*|--type=*)
+    SCRIPTDIR="${i#*=}"
+    ;;
     --default)
     DEFAULT=YES
     ;;
@@ -93,6 +96,9 @@ case $i in
 esac
 done
 
+######
+# identify users home
+USER=`whoami`
 # define default variables
 if [[ "${date}" == "" ]]      ; then  param=FALSE; date=`date -u +%Y%m%d`; fi
 if [[ "${run}" == "" ]] && [[ "${run}" != "00" ]] && [[ "${run}" && "06" ]] && [[ "${run}" != "12" ]] && [[ "${run}" != "18" ]]  ; then  param=FALSE; run="00"; fi
@@ -106,6 +112,7 @@ if [[ "${netCDF}" == ""    ]] ; then  param=FALSE; netCDF="FALSE" ; fi
 if [[ "${grib1}" == "" ]]     ; then  param=FALSE; grib1="FALSE" ; fi
 if [[ "${DATADIR}" == "" ]]   ; then  param=FALSE; DATADIR="wxdata" ; fi
 if [[ "${MODELDIR}" == "" ]]  ; then  param=FALSE; MODELDIR="GFS25" ; fi
+if [[ "${SCRIPTDIR}" == "" ]] ; then param=FALSE;  SCRIPTDIR="scripting/meteoGRIB";  fi
 if [[ "${param}" == "FALSE" ]]; then
 echo "one ore more arguments omitted..."
 echo "get help with ./extractGribGFS.sh -h"
@@ -126,21 +133,18 @@ echo DATADIR=${DATADIR}
 echo MODELDIR=${MODELDIR}
 
 
-######
-# identify users home
-USER=`whoami`
-
+SCRIPTPATH=/home/$USER/dev/${SCRIPTDIR}
+echo SCRIPTPATH = ${SCRIPTPATH}
 # set datapath (currently GFS25)
 filename=$(basename "$INFILE")
 filename="${filename%.*}"
 fndate=${filename:20:8}
 INDATAPATH=$(dirname "$INFILE")
-EXDATAPATH=/home/$USER/$DATADIR/$MODELDIR/$date/$run
-SCRIPTPATH=/home/$USER/dev/scripts/meteoGRIB
+EXDATAPATH=/home/$USER/$DATADIR/$MODELDIR/$fndate/$run
+
 echo "~~~~~~~~~~~~~~~~~"
 echo "output folder:"
 echo "$EXDATAPATH"
-echo "$SCRIPTPATH"
 echo "~~~~~~~~~~~~~~~~~"
 
 

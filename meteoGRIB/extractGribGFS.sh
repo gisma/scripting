@@ -17,7 +17,7 @@ if [[ "$1" == '-h' ]]; then
     echo "                    at the nearest model grid to a request."
     echo "                    Currently only meteogram datasets are supported"
     echo " "
-    echo " Usage:  ./extractGribGFS.sh -i=<GribGFSFile> -r= 00-lo=DD.DD -la=DD.DD -t=<extractype> -f1=<pathtoscript> -c"
+    echo " Usage:  ./extractGribGFS.sh -i=<GribGFSFile> -r= 00-lo=DD.DD -la=DD.DD -t=<extractype> -f3=<pathtoscript> -c"
     echo "         ./extractGribGFS.sh -h shows this brief help "
     echo " "
     echo " <extractGrib.sh> extracts from the 0.25° GFS GRIB2 data"
