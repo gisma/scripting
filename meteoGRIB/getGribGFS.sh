@@ -9,6 +9,9 @@
 # Additionally it converts the single files to one datafile for use with IDV etc.
 # and comfortable timeseries analysis
 # generates netcdf, grib1 and grib2 all in one files
+# instad of setting the working folders by command line arguments
+# you may change them in the script
+# note the structure ist $HOME/$DATADIR/$MODELDIR
 
 
 if [[ "$1" == '-h' ]]; then
@@ -18,7 +21,7 @@ if [[ "$1" == '-h' ]]; then
     echo " It is strongly recommended to extract a ROI"
     echo " "
     echo "Usage: ./getGribGFS.sh -h gives this brief help "
-    echo "       ./getGribGFS.sh -d=YYYYMMDD -r=00 -wl=DDD.DD -el=DDD.DD -nl=DDD.DD -sl=DDD.DD -st=0 -et=96 -nc=FALSE -g1=FALSE"
+    echo "       ./getGribGFS.sh -d=YYYYMMDD -r=00 -wl=DDD.DD -el=DDD.DD -nl=DDD.DD -sl=DDD.DD -st=0 -et=96 -nc=FALSE -g1=FALSE -f1=DataDir -f2=MTypDir"
     echo""
     echo " -d=YYYYMMDD :  date i.e. 20150621"
     echo " -r=HH       :  hour of run [00 06 12 18]"
@@ -31,8 +34,10 @@ if [[ "$1" == '-h' ]]; then
     echo " -st=HH      :  start time [0] of forecast"
     echo " -et=HH      :  end time [96]  of forecast"
     echo "                0.25 GFS 3h => 96=10 days "
-    echo " -nc=boolean :  <FALSE> convert data to netcdf format"
-    echo " -g1=boolean :  <FALSE> convert data to grib1 format"
+    echo " -nc=boolean :  <[FALSE]/TRUE> convert data to netcdf format"
+    echo " -g1=boolean :  <[FALSE]/TRUE> convert data to grib1 format"
+    echo " -f1=DATADIR :  <[wxdata]> root data directory under $HOME"
+    echo " -f2=MTypDir :  <[GFS25]> convert data to grib1 format"
     echo " "
     echo " example     :  ./getGribGFS.sh -d=20150620 -r=00 -wl=-10.5 -el=20.25 -nl=60.75 -sl=40.0"
     exit 0
@@ -71,6 +76,12 @@ case $i in
     -g1=*)
     grib1="${i#*=}"
     ;;
+    -f1=*)
+    DATADIR="${i#*=}"
+    ;;
+    -f2=*)
+    MODELDIR="${i#*=}"
+    ;;
 
     --default)
     DEFAULT=YES
@@ -92,7 +103,14 @@ if [[ "${toplat}" == ""    ]] ; then  param=FALSE; toplat="90" ; fi
 if [[ "${bottomlat}" == "" ]] ; then  param=FALSE; bottomlat="-90" ; fi
 if [[ "${netCDF}" == ""    ]] ; then  param=FALSE; netCDF="FALSE" ; fi
 if [[ "${grib1}" == "" ]]     ; then  param=FALSE; grib1="FALSE" ; fi
-echo "extracting the data with the following parameters:"
+if [[ "${DATADIR}" == "" ]]   ; then  param=FALSE; DATADIR="wxdata" ; fi
+if [[ "${MODELDIR}" == "" ]]  ; then  param=FALSE; MODELDIR="GFS25" ; fi
+if [[ "${param}" == "FALSE" ]]; then
+echo "one ore more arguments omitted..."
+echo "get help with ./extractGribGFS.sh -h"
+echo "Nevertheless proceeding with DEFAULT values..." ;
+fi
+echo "argument list:"
 echo date=${date}
 echo run=${run}
 echo StartTime=${StartTime}
@@ -103,15 +121,13 @@ echo toplat=${toplat}
 echo bottomlat=${bottomlat}
 echo netCDF=${netCDF}
 echo grib1=${grib1}
-if [[ "${param}" == "FALSE" ]]; then echo "Get help with ./extractGribGFS.sh -h"; echo "However proceeding with above DEFAULT values..." ;fi
+echo DATADIR=${DATADIR}
+echo MODELDIR=${MODELDIR}
+
 
 ######
 # identify users home
 USER=`whoami`
-# PREDIFINED FOLDERS
-DATADIR="data"
-MODELDIR="GFS25"
-
 
 # set datapath (currently GFS25)
 filename=$(basename "$INFILE")
