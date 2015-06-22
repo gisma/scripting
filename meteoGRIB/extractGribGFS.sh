@@ -93,7 +93,7 @@ done
 USER=`whoami`
 
 if [[ "${INFILE}" == "" ]]     ; then echo "--GRIB data file missing..."; ./extractGribGFS.sh -h; exit; fi
-if [[ !"${run}" ]] && [[ "${run}" != "00" ]] && [[ "${run}" && "06" ]] && [[ "${run}" != "12" ]] && [[ "${run}" != "18" ]]  ; then  param=FALSE; run="00"; fi
+if [[ !"${run}" ]]             ; then  param=FALSE; "run slot missing"; ./extractGribGFS.sh -h; exit; fi
 if [[ "${LAT}" == "" ]]        ; then echo "--latitude missing - set DEFAULT Marburg/Germany"   ; param=FALSE; LAT=50.8;LON=8.7;  fi
 if [[ "${LON}" == "" ]]        ; then echo "--longitude missing - set DEFAULT Marburg/Germany " ; param=FALSE; LAT=50.8;LON=8.7;  fi
 if [[ "${type}" == "" ]]       ; then echo "--type missing - set DEFAULT type 'meteogram'"     ; param=FALSE; type='meteogram';  fi
