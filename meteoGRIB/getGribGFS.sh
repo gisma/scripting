@@ -166,11 +166,13 @@ hour=$StartTime
 # allvars and all levels in a subregion
 
 # initial setup the url
+
+
 URL="http://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl?file=gfs.t${run}z.pgrb2.0p25.f${charNewHour}&all_lev=on&all_var=on&subregion=&leftlon=${leftlon}&rightlon=${rightlon}&toplat=${toplat}&bottomlat=${bottomlat}&dir=%2Fgfs.${date}${run}"
 
 # first we check if the file exist
 echo "check if data is available...."
-if [[ `wget -S --spider $URL  2>&1 | grep 'HTTP/1.1 200 OK'` ]]
+if [[ `curl --head $URL 2>&1 | grep 'HTTP/1.1 200 OK'` ]]
  then
 	# start loop over all time slots NOTE GFS 0.25 has a 3 hours cycle
 	while [ $hour -le $EndTime ]
