@@ -17,7 +17,7 @@ if [[ "$1" == '-h' ]]; then
     echo "                    at the nearest model grid to a request."
     echo "                    Currently only meteogram datasets are supported"
     echo " "
-    echo " Usage:  ./extractGribGFS.sh -i=<GribGFSFile> -r= 00-lo=DD.DD -la=DD.DD -t=<extractype> -f3=<pathtoscript> -c"
+    echo " Usage:  ./extractGribGFS.sh -i=<GribGFSFile> -r= 00-lo=DD.DD -la=DD.DD -t=<extractype> -f3=<pathtoscript> -c -s"
     echo "         ./extractGribGFS.sh -h shows this brief help "
     echo " "
     echo " <extractGrib.sh> extracts from the 0.25° GFS GRIB2 data"
@@ -41,6 +41,7 @@ if [[ "$1" == '-h' ]]; then
     echo " -f2=MTypDir:  <[GFS25]>  type of model tag under $DATADIR"
     echo " -f3=ScriptDir:<[[scripting]> script folder under $HOME/dev "
     echo "  -c                        delete all files in output directory default is false"
+    echo "  -s                        simple datum format"
     echo " You may also use the long formats:"
     echo " --GRIB --latitude= --longitude= --type= "
 
@@ -80,6 +81,9 @@ case $i in
     -c)
     clean="${i#}"
     ;;
+    -s)
+    simple="${i#}"
+    ;;
     --default)
     DEFAULT=YES
     ;;
@@ -100,6 +104,7 @@ if [[ "${type}" == "" ]]       ; then echo "--type missing - set DEFAULT type 'm
 if [[ "${DATADIR}" == "" ]]    ; then param=FALSE; DATADIR="wxdata" ; fi
 if [[ "${MODELDIR}" == "" ]]   ; then param=FALSE; MODELDIR="GFS25" ; fi
 if [[ "${SCRIPTDIR}" == "" ]] ; then param=FALSE;  SCRIPTDIR="scripts/meteoGRIB";  fi
+
 
 if [[ "${param}" == "FALSE" ]]; then echo "Get help with ./extractGribGFS.sh -h"; echo "However proceeding with above DEFAULT values..." ;fi
 
@@ -194,19 +199,58 @@ if [[ "${type}" == "meteogram" ]] ;then
 		  fi
 			i=$((i+1))
 
+
+
+
+
+
 	# get the STARTTIME
 		done
 	      # just for getting startime and valid data periods the use of the TCDC is arbitrary
-	       wgrib2 -s -match  ":TCDC:high cloud layer:"             $INFILE -vt -print DEL -lon $LON $LAT |  grep -o -P '(?<=d=).*(?=,)' | awk '{print substr($0, 0, 10);}' > STIME
-	       wgrib2 -s -match  ":TCDC:high cloud layer:"             $INFILE -vt -print DEL -lon $LON $LAT |  grep -o -P '(?<=vt=).*(?=:DEL)' | awk '{ printf("%010d\n", $0 - 3) }' > CTIME1
-	       wgrib2 -s -match  ":TCDC:high cloud layer:"             $INFILE -vt -print DEL -lon $LON $LAT |  grep -o -P '(?<=vt=).*(?=:DEL)'  > CTIME2
-
+	       wgrib2 -s -match  ":TCDC:high cloud layer:"             $INFILE -vt -print DEL -lon $LON $LAT |  grep -o -P '(?<=d=).*(?=,)' | awk '{print substr($0, 0, 10)}'  > STIME
 	       while read line
 	       do
-	        STARTTIME=$line
-	        echo $STARTTIME
-	        break
+			STARTTIME=$line
+			echo $STARTTIME
+			break
 	       done < 'STIME'
+
+	       Y=${STARTTIME:0:4}
+	       M=${STARTTIME:4:2}
+	       D1=${STARTTIME:6:2}
+
+           if [[ $simple !=  "-s" ]] ; then
+			Y=${STARTTIME:0:4}
+			M=${STARTTIME:4:2}
+			D1=${STARTTIME:6:2}
+			D2=$(($D1+1))
+			D3=$(($D1+2))
+			for z in $(seq   0 3)
+			do
+				for i in $(seq -w  0 3 23)
+				do
+					echo $Y-$M-$(($D1+$z))'T'$i':00:00' >> CTIME1
+				done
+			done
+			#echo $Y-$M-$D3'T00:00:00' >> CTIME1
+
+			for z in $(seq   0 3)
+			do
+				for i in $(seq -w  3 3 23)
+				do
+					echo $Y-$M-$(($D1+$z))'T'$i':00:00' >> CTIME2
+			done
+			echo $Y-$M-$D2'T00:00:00' >> CTIME2
+			done
+
+			#wgrib2 -s -match  ":TCDC:high cloud layer:"             $INFILE -vt -print DEL -lon $LON $LAT |  grep -o -P '(?<=d=).*(?=,)' | awk '{print substr($0, 0, 4)"-"substr($0, 5, 2)"-"substr($0, 7, 2)"T"substr($0, 9, 2)":00:00";}' > STIME
+			else
+
+			#wgrib2 -s -match  ":TCDC:high cloud layer:"             $INFILE -vt -print DEL -lon $LON $LAT |  grep -o -P '(?<=vt=).*(?=:DEL)' | awk '{ printf("%010d\n", $0 - 3) }' | awk '{print substr($0, 0, 4)"-"substr($0, 5, 2)"-"substr($0, 7, 2)"T"substr($0, 9, 2)":00:00";}'> CTIME1
+			wgrib2 -s -match  ":TCDC:high cloud layer:"             $INFILE -vt -print DEL -lon $LON $LAT |  grep -o -P '(?<=vt=).*(?=:DEL)' | awk '{ printf("%010d\n", $0 - 3) }'> CTIME1
+			wgrib2 -s -match  ":TCDC:high cloud layer:"             $INFILE -vt -print DEL -lon $LON $LAT |  grep -o -P '(?<=vt=).*(?=:DEL)'  > CTIME2
+            fi
+
 	       while read line
 	       do
 	        geoHGT=$line
@@ -215,17 +259,14 @@ if [[ "${type}" == "meteogram" ]] ;then
 
 	# calculate sunrise/set
 
-	Y=${STARTTIME:0:4}
-	M=${STARTTIME:4:2}
-	D=${STARTTIME:6:2}
 
-	SUNTIME=$($SCRIPTPATH/./suncalc.R "$D$M$Y" $LAT $LON)
-   echo "suntime $SUNTIME"
-	tmp=${STARTTIME}_${LON}_${LAT}
+	SUNTIME=$($SCRIPTPATH/./suncalc.R "$D1$M$Y" $LAT $LON)
+ 	tmp=${STARTTIME}_${LON}_${LAT}
 	mod=${tmp//./-}
 	OUTFILE=$mod.meteogram
 
 	# past the single col-files together (del=,)
+
 	paste -d',' CTIME1 CTIME2 PRES PRMSL TMAX TMIN DPT RH WS10 WD10 GUST WS100 WD100 WS1829 WD1829 WS2743 WD2743 WS3658 WD3658 APCP ACPCP lTCDC mTCDC hTCDC> $OUTFILE
 
 	# put header
@@ -236,15 +277,14 @@ if [[ "${type}" == "meteogram" ]] ;then
 	# HGT the geopotential Height of the given coordinate
 
 	# concat the META string
-    METAHEAD='Datum Vorhersagezeit,Sonnenaufgang,Sonnenuntergang,Höhe,Geographische Länge,Geographische Breite'
+    METAHEAD='Datum,Sonnenaufgang,Sonnenuntergang,Höhe,Geographische Länge,Geographische Breite'
     echo " ssssssssss $Y-$M-$D $run $SUNTIME $geoHGT $LON,$LAT"
 	METADATA=${Y}-${M}-${D},${run},${SUNTIME},${geoHGT},${LON},${LAT}
-	echo "metadata $METADATA"
-	echo "metadata $METAHEAD"
+
 
 	sed -i "1i${METADATA}"  $OUTFILE
 	sed -i "1i${METAHEAD}"  $OUTFILE
-	set -- "HGT" "STIME" "WIND.grb" "CTIME1" "CTIME2" "PRES" "PRMSL" "TMAX" "TMIN" "DPT" "RH" "WS10" "WD10" "GUST" "WS100" "WD100" "WS1829" "WD1829" "WS2743" "WD2743" "WS3658" "WD3658" "APCP" "ACPCP" "lTCDC" "mTCDC" "hTCDC"
+	set -- "T" "TT" "HGT" "STIME" "WIND.grb" "CTIME1" "CTIME2" "PRES" "PRMSL" "TMAX" "TMIN" "DPT" "RH" "WS10" "WD10" "GUST" "WS100" "WD100" "WS1829" "WD1829" "WS2743" "WD2743" "WS3658" "WD3658" "APCP" "ACPCP" "lTCDC" "mTCDC" "hTCDC"
 	# cleanup
 	rm -f $@
 
