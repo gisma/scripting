@@ -92,14 +92,14 @@ done
 # identify users home
 USER=`whoami`
 
-if [[ "${INFILE}" == "" ]]     ; then echo "--GRIB data file missing..."; ./extractGribGFS.sh -h; exit; fi
-if [[ "${run}" == "" ]]             ; then  param=FALSE; "run slot missing"; ./extractGribGFS.sh -h; exit; fi
+if [[ "${INFILE}" == "" ]]     ; then echo "--GRIB data file missing... ./extractGribGFS.sh -h for help";  exit; fi
+if [[ "${run}" == "" ]]             ; then  param=FALSE; "run slot missing ./extractGribGFS.sh -h for help";  exit; fi
 if [[ "${LAT}" == "" ]]        ; then echo "--latitude missing - set DEFAULT Marburg/Germany"   ; param=FALSE; LAT=50.8;LON=8.7;  fi
 if [[ "${LON}" == "" ]]        ; then echo "--longitude missing - set DEFAULT Marburg/Germany " ; param=FALSE; LAT=50.8;LON=8.7;  fi
 if [[ "${type}" == "" ]]       ; then echo "--type missing - set DEFAULT type 'meteogram'"     ; param=FALSE; type='meteogram';  fi
 if [[ "${DATADIR}" == "" ]]    ; then param=FALSE; DATADIR="wxdata" ; fi
 if [[ "${MODELDIR}" == "" ]]   ; then param=FALSE; MODELDIR="GFS25" ; fi
-if [[ "${SCRIPTDIR}" == "" ]] ; then param=FALSE;  SCRIPTDIR="scripting/meteoGRIB";  fi
+if [[ "${SCRIPTDIR}" == "" ]] ; then param=FALSE;  SCRIPTDIR="scripts/meteoGRIB";  fi
 
 if [[ "${param}" == "FALSE" ]]; then echo "Get help with ./extractGribGFS.sh -h"; echo "However proceeding with above DEFAULT values..." ;fi
 
@@ -118,7 +118,7 @@ filename=$(basename "$INFILE")
 filename="${filename%.*}"
 fndate=${filename:20:8}
 INDATAPATH=$(dirname "$INFILE")
-EXDATAPATH=/home/$USER/$DATADIR/$MODELDIR/$fndate/$run/$type
+EXDATAPATH=/home/$USER/$DATADIR/$MODELDIR/$fndate/$type
 echo "~~~~~~~~~~~~~~~~~"
 echo "output folder:"
 echo EXDATAPATH = ${EXDATAPATH}
@@ -204,6 +204,7 @@ if [[ "${type}" == "meteogram" ]] ;then
 	       while read line
 	       do
 	        STARTTIME=$line
+	        echo $STARTTIME
 	        break
 	       done < 'STIME'
 	       while read line
@@ -218,13 +219,8 @@ if [[ "${type}" == "meteogram" ]] ;then
 	M=${STARTTIME:4:2}
 	D=${STARTTIME:6:2}
 
-	SUNTIME=$($SCRIPTPATH/./suncalc.R "$M/$D/$Y" $LON $LAT)
-
-
-	Y=${STARTTIME:0:4}
-	M=${STARTTIME:4:2}
-	D=${STARTTIME:6:2}
-
+	SUNTIME=$($SCRIPTPATH/./suncalc.R "$D$M$Y" $LAT $LON)
+   echo "suntime $SUNTIME"
 	tmp=${STARTTIME}_${LON}_${LAT}
 	mod=${tmp//./-}
 	OUTFILE=$mod.meteogram
@@ -233,16 +229,21 @@ if [[ "${type}" == "meteogram" ]] ;then
 	paste -d',' CTIME1 CTIME2 PRES PRMSL TMAX TMIN DPT RH WS10 WD10 GUST WS100 WD100 WS1829 WD1829 WS2743 WD2743 WS3658 WD3658 APCP ACPCP lTCDC mTCDC hTCDC> $OUTFILE
 
 	# put header
-	sed -i '1iStartzeit, Endzeit,Lokaler Luftdruck,Reduzierter Luftdruck,MaxTemp,MinTemp,TaupunktTemp,Relative Feuchte,Windgeschwindigkeit 10m, Windrichtung 10m, Windböen, Windgeschwindigkeit 100m, Windrichtung 100m, Windgeschwindigkeit 1829m, Windrichtung 1829m, Windgeschwindigkeit 2743m, Windrichtung 2743m, Windgeschwindigkeit 3658m, Windrichtung 3658m, Konvektiver Niederschlag, Stratiformer Niederschlag,Wolkenbedeckung (niedrig),Wolkenbedeckung (mittel),Wolkenbedeckung (hoch)) '  $OUTFILE
+	sed -i '1iBeginn Vorhersage,Ende Vorhersage,Luftdruck 2m hPa,Luftdruck msl hPa,Maximum Temperatur °C,Minimum Temperatur °C,Taupunkt Temperatur °C,Relative Feuchte %,Windgeschwindigkeit 10m m/s,Windrichtung 10m Grad,Windböe m/s,Windgeschwindigkeit 100m m/s,Windrichtung 100m Grad,Windgeschwindigkeit ~1800m m/s,Windrichtung ~1800m Grad,Windgeschwindigkeit ~2750m m/s,Windrichtung 2750m Grad,Windgeschwindigkeit ~3650m m/s,Windrichtung ~3650m Grad,Niederschlag konvektiv mm,Niederschlag stratiform mm,Wolken niedrig %,Wolken mittel %,Wolken hoch %'  $OUTFILE
 	# write some metatags
 	# STARTTIME : the Starting Time of the Model i.e. the Analysis run
 	# SUNTIME   : Sunrise and Sunset at the given coordinate in decimal Time
 	# HGT the geopotential Height of the given coordinate
 
 	# concat the META string
-	META=$STARTTIME,$SUNTIME,$geoHGT,$LON,$LAT
+    METAHEAD='Datum Vorhersagezeit,Sonnenaufgang,Sonnenuntergang,Höhe,Geographische Länge,Geographische Breite'
+    echo " ssssssssss $Y-$M-$D $run $SUNTIME $geoHGT $LON,$LAT"
+	METADATA=${Y}-${M}-${D},${run},${SUNTIME},${geoHGT},${LON},${LAT}
+	echo "metadata $METADATA"
+	echo "metadata $METAHEAD"
 
-	sed -i "1i${META}"  $OUTFILE
+	sed -i "1i${METADATA}"  $OUTFILE
+	sed -i "1i${METAHEAD}"  $OUTFILE
 	set -- "HGT" "STIME" "WIND.grb" "CTIME1" "CTIME2" "PRES" "PRMSL" "TMAX" "TMIN" "DPT" "RH" "WS10" "WD10" "GUST" "WS100" "WD100" "WS1829" "WD1829" "WS2743" "WD2743" "WS3658" "WD3658" "APCP" "ACPCP" "lTCDC" "mTCDC" "hTCDC"
 	# cleanup
 	rm -f $@
@@ -251,6 +252,7 @@ if [[ "${type}" == "meteogram" ]] ;then
 	   echo "$OUTFILE created"
 	   cat "$OUTFILE"
 	else
+
 	   echo "No success -lease check directory"
 	fi
 else

@@ -156,6 +156,7 @@ cd $EXDATAPATH
 
 # fix the substitution variables to fixed format 3 numbers
 charNewHour=$(printf "%03d\n" $StartTime)
+charStartTime=$(printf "%02d\n" $StartTime)
 hour=$StartTime
 
 # here we put the filter URL of the noaa g2sub service (i.e. http://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl?dir=%2Fgfs.2015061700)
@@ -214,22 +215,22 @@ fi
 mv gfs.t${run}z.pgrb2.0p25.f000 gfs.t${run}z.pgrb2.0p25.f000.grb
 
 # merge all grib2 files to one
-cdo -O mergetime gfs.t${run}z.pgrb2.0p25.f??? gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.grb
+cdo -O mergetime gfs.t${run}z.pgrb2.0p25.f??? gfs.t${run}z.pgrb2.0p25.${date}_${charStartTime}_${EndTime}.grb
 
 # grib2 to netcdf
 if [[ "${netCDF1}" == "TRUE" ]] ; then
   # convert it to netcdf (it seems to work even if there some warnings)
-  cdo -f nc copy gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.grb gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.nc
+  cdo -f nc copy gfs.t${run}z.pgrb2.0p25.${date}_${charStartTime}_${EndTime}.grb gfs.t${run}z.pgrb2.0p25.${date}_${charStartTime}_${EndTime}.nc
   # and squeeze it via shuffeling and compressing (http://www.unidata.ucar.edu/blogs/developer/en/entry/netcdf_compression)
-  nccopy -u -d5 gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.nc gfs.t${run}z.0p25.${date}_${StartTime}_${EndTime}.nc
+  nccopy -u -d5 gfs.t${run}z.pgrb2.0p25.${date}_${charStartTime}_${EndTime}.nc gfs.t${run}z.0p25.${date}_${charStartTime}_${EndTime}.nc
   # remove uncompressed file
-  if [ ! -f gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.nc ]; then rm -r gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.nc ; fi
+  if [ ! -f gfs.t${run}z.pgrb2.0p25.${date}_${charStartTime}_${EndTime}.nc ]; then rm -r gfs.t${run}z.pgrb2.0p25.${date}_${charStartTime}_${EndTime}.nc ; fi
 fi
 echo $(printf %.$2f $(echo "scale=0;(((10^$file_size_00)*$1)+0.5)/(10^$file_size_00)" | bc))
 # grib2 to grib1
 if [[ "${grib1}" == "TRUE" ]] ; then
   # convert the grib 2 to grib one for usage with zygrib
-  cnvgrib -g21 ${date}/gfs.t${run}z.pgrb2.0p25.${date}_${StartTime}_${EndTime}.grb ${date}/gfs.t${run}z.pgrb1.0p25.${date}_${StartTime}_${EndTime}.grb
+  cnvgrib -g21 ${date}/gfs.t${run}z.pgrb2.0p25.${date}_${charStartTime}_${EndTime}.grb ${date}/gfs.t${run}z.pgrb1.0p25.${date}_${charStartTime}_${EndTime}.grb
 fi
 
 # remove single files
