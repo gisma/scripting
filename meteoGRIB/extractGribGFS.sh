@@ -170,6 +170,7 @@ if [[ "${type}" == "meteogram" ]] ;then
 	       wgrib2 -match  ":WDIR:2743 m above mean sea level:"     WIND.grb     -lon $LON $LAT -print " " |  grep -o -P '(?<=val=).*(?=:)' > WD2743
 	       wgrib2 -match  ":WIND:3658 m above mean sea level:"     WIND.grb     -lon $LON $LAT -print " " |  grep -o -P '(?<=val=).*(?=:)' > WS3658
 	       wgrib2 -match  ":WDIR:3658 m above mean sea level:"     WIND.grb     -lon $LON $LAT -print " " |  grep -o -P '(?<=val=).*(?=:)' > WD3658
+
 	      elif [ ${VARS[$i]} == 'GUST' ] ;  then
 	       wgrib2 -match  ":${VARS[$i]}:surface:"                  $INFILE  -lon $LON $LAT -print " " |  grep -o -P '(?<=val=).*(?=:)' > GUST
 	      elif [ ${VARS[$i]} == 'PRES' ] ;  then
@@ -211,7 +212,6 @@ if [[ "${type}" == "meteogram" ]] ;then
 	       while read line
 	       do
 			STARTTIME=$line
-			echo $STARTTIME
 			break
 	       done < 'STIME'
 
@@ -257,40 +257,153 @@ if [[ "${type}" == "meteogram" ]] ;then
 	        break
 	       done < 'HGT'
 
+
+         while read  WS10
+	do
+	tmp=$(bc <<< "$WS10*10")
+	cmp=$(echo  $tmp | python -c "print int(round(float(raw_input())))")
+	  if  (( $cmp  < 3 ))
+	  then
+	    echo 'Flaute' >> beaufort
+	  elif (($cmp>=3 && $cmp <16))
+	  then
+	    echo 'Leiser Zug' >> beaufort
+	  elif (($cmp>=  16 && $cmp <  34 ))
+	  then
+	    echo 'Leichte Brise' >> beaufort
+	  elif (($cmp>=   34 && $cmp <  55 ))
+	  then
+	    echo 'Schwache Brise' >> beaufort
+	  elif (($cmp>=   55 && $cmp <  80 ))
+	  then
+	    echo 'Mäßige Brise' >> beaufort
+	  elif (($cmp>=   80 && $cmp <  108 ))
+	  then
+	    echo 'Frische Brise' >> beaufort
+	  elif (($cmp>=   108 && $cmp <  139 ))
+	  then
+	    echo 'Starker Wind' >> beaufort
+	  elif (($cmp>=   139 && $cmp <  172 ))
+	  then
+	    echo 'Steifer Wind' >> beaufort
+	  elif (($cmp>=   172 && $cmp <  208 ))
+	  then
+	    echo 'Stürmischer Wind' >> beaufort
+	  elif (($cmp>=   208 && $cmp <  245 ))
+	  then
+	    echo 'Sturm' >> beaufort
+	  elif (($cmp>=   245 && $cmp <  285 ))
+	  then
+	    echo 'Schwerer Sturm' >> beaufort
+	  elif (($cmp>=   285 && $cmp <  327 ))
+	  then
+	    echo 'Orkanartiger Sturm' >> beaufort
+	  elif (($cmp>=   327 ))
+	  then
+	    echo 'Orkan' >> beaufort
+     else
+	  echo 'FEHLER' >> beaufort
+     fi
+    done < WS10
+
+	while read  WD10
+	do
+	tmp=$(bc <<< "$WD10*100")
+	cmp=$(echo  $tmp | python -c "print int(round(float(raw_input())))")
+	  if  (($cmp>=34875 && $cmp <=36000))
+	  then
+	    echo 'N' >> dir
+	  elif  (($cmp>=0 && $cmp <=1125))
+	  then
+	    echo 'N' >> dir
+	  elif (($cmp>=1125 && $cmp <3375))
+	  then
+	    echo 'NNO' >> dir
+	  elif (($cmp>=  3375 && $cmp <  5625))
+	  then
+	    echo 'NO' >> dir
+	  elif (($cmp>=   5625 && $cmp < 7875))
+	  then
+	    echo 'ONO' >> dir
+	  elif (($cmp>=   7875 && $cmp <  10125 ))
+	  then
+	    echo 'O' >> dir
+	  elif (($cmp>=   10125 && $cmp <  12375 ))
+	  then
+	    echo 'OSO' >> dir
+	  elif (($cmp>=   12375 && $cmp <  14625 ))
+	  then
+	    echo 'SO' >> dir
+	  elif (($cmp>=   14625 && $cmp <  16875 ))
+	  then
+	    echo 'SSO' >> dir
+	  elif (($cmp>=   16875 && $cmp <  19125 ))
+	  then
+	    echo 'S' >> beaufort
+	  elif (($cmp>=   19125 && $cmp <  21375 ))
+	  then
+	    echo 'SSW' >> dir
+	  elif (($cmp>=   21375 && $cmp <  23625 ))
+	  then
+	    echo 'SW' >> dir
+	  elif (($cmp>=   23625 && $cmp <  25875 ))
+	  then
+	    echo 'WSW' >> dir
+	  elif (($cmp>=   25875 && $cmp <  28125 ))
+	  then
+	    echo 'W' >> dir
+	  elif (($cmp>=   28125 && $cmp <  30375 ))
+	  then
+	    echo 'WNW' >> dir
+	  elif (($cmp>=   30375 && $cmp <  32625 ))
+	  then
+	    echo 'NW' >> dir
+	  elif (($cmp>=   32625 && $cmp <  34875 ))
+	  then
+	    echo 'NNW' >> dir
+	  else
+		echo 'FEHLER' >> dir
+	  fi
+	done < WD10
+
+
+
 	# calculate sunrise/set
-
-
 	SUNTIME=$($SCRIPTPATH/./suncalc.R "$D1$M$Y" $LAT $LON)
+
  	tmp=${STARTTIME}_${LON}_${LAT}
 	mod=${tmp//./-}
 	OUTFILE=$mod.meteogram
+	OUTFILEMETA=$mod.meteogram.meta
+
+	# concat the META string
+    METAHEAD='Datum,Vorhersage,Sonnenaufgang,Sonnenuntergang,Höhe,Geographische Länge,Geographische Breite'
+
+	METADATA=${Y}-${M}-${D1},${run},${SUNTIME},${geoHGT},${LON},${LAT}
+
+	echo "${METAHEAD}" > $OUTFILEMETA
+    echo "${METADATA}" >> $OUTFILEMETA
+
 
 	# past the single col-files together (del=,)
-
-	paste -d',' CTIME1 CTIME2 PRES PRMSL TMAX TMIN DPT RH WS10 WD10 GUST WS100 WD100 WS1829 WD1829 WS2743 WD2743 WS3658 WD3658 APCP ACPCP lTCDC mTCDC hTCDC> $OUTFILE
+	paste -d',' CTIME1 CTIME2 PRES PRMSL TMAX TMIN DPT RH WS10 beaufort WD10 dir GUST WS100 WD100 WS1829 WD1829 WS2743 WD2743 WS3658 WD3658 APCP ACPCP lTCDC mTCDC hTCDC> $OUTFILE
 
 	# put header
-	sed -i '1iBeginn Vorhersage,Ende Vorhersage,Luftdruck 2m hPa,Luftdruck msl hPa,Maximum Temperatur °C,Minimum Temperatur °C,Taupunkt Temperatur °C,Relative Feuchte %,Windgeschwindigkeit 10m m/s,Windrichtung 10m Grad,Windböe m/s,Windgeschwindigkeit 100m m/s,Windrichtung 100m Grad,Windgeschwindigkeit ~1800m m/s,Windrichtung ~1800m Grad,Windgeschwindigkeit ~2750m m/s,Windrichtung 2750m Grad,Windgeschwindigkeit ~3650m m/s,Windrichtung ~3650m Grad,Niederschlag konvektiv mm,Niederschlag stratiform mm,Wolken niedrig %,Wolken mittel %,Wolken hoch %'  $OUTFILE
+	sed -i '1iBeginn Vorhersage,Ende Vorhersage,Luftdruck 2m hPa,Luftdruck msl hPa,Maximum Temperatur C,Minimum Temperatur C,Taupunkt Temperatur C,Relative Feuchte Prozent,Windgeschwindigkeit 10m ms-1,Windgeschwindigkeit 10m Beaufort,Windrichtung 10m Grad,Windrichtung 10m Windrose,Windböe ms-1,Windgeschwindigkeit 100m ms-1,Windrichtung 100m Grad,Windgeschwindigkeit 1800m ms-1,Windrichtung 1800m Grad,Windgeschwindigkeit 2750m ms-1,Windrichtung 2750m Grad,Windgeschwindigkeit 3650m ms-1,Windrichtung 3650m Grad,Niederschlag konvektiv mm,Niederschlag stratiform mm,Wolken niedrig Prozent,Wolken mittel Prozent,Wolken hoch Prozent'  $OUTFILE
 	# write some metatags
 	# STARTTIME : the Starting Time of the Model i.e. the Analysis run
 	# SUNTIME   : Sunrise and Sunset at the given coordinate in decimal Time
 	# HGT the geopotential Height of the given coordinate
 
-	# concat the META string
-    METAHEAD='Datum,Sonnenaufgang,Sonnenuntergang,Höhe,Geographische Länge,Geographische Breite'
-    echo " ssssssssss $Y-$M-$D $run $SUNTIME $geoHGT $LON,$LAT"
-	METADATA=${Y}-${M}-${D},${run},${SUNTIME},${geoHGT},${LON},${LAT}
 
-
-	sed -i "1i${METADATA}"  $OUTFILE
-	sed -i "1i${METAHEAD}"  $OUTFILE
-	set -- "T" "TT" "HGT" "STIME" "WIND.grb" "CTIME1" "CTIME2" "PRES" "PRMSL" "TMAX" "TMIN" "DPT" "RH" "WS10" "WD10" "GUST" "WS100" "WD100" "WS1829" "WD1829" "WS2743" "WD2743" "WS3658" "WD3658" "APCP" "ACPCP" "lTCDC" "mTCDC" "hTCDC"
+	set -- "dir" "beaufort" "T" "TT" "HGT" "STIME" "WIND.grb" "CTIME1" "CTIME2" "PRES" "PRMSL" "TMAX" "TMIN" "DPT" "RH" "WS10" "WD10" "GUST" "WS100" "WD100" "WS1829" "WD1829" "WS2743" "WD2743" "WS3658" "WD3658" "APCP" "ACPCP" "lTCDC" "mTCDC" "hTCDC"
 	# cleanup
 	rm -f $@
 
 	if [ -f $OUTFILE ]; then
-	   echo "$OUTFILE created"
-	   cat "$OUTFILE"
+	   clear
+	   echo "$($SCRIPTPATH/./tojson.R $mod.meteogram)"  > $OUTFILE
+	   #cat "$OUTFILE"
 	else
 
 	   echo "No success -lease check directory"
